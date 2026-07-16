@@ -21,7 +21,9 @@ type jsonResult struct {
 	SOAOwner    string   `json:"soa_owner"`
 	SOAMName    string   `json:"soa_mname"`
 	EDE         *jsonEDE `json:"ede"`
-	Source      string   `json:"source"`
+	// RD0 is the non-recursive follow-up outcome; empty when it was not probed.
+	RD0    string `json:"rd0,omitempty"`
+	Source string `json:"source"`
 }
 
 type jsonEDE struct {
@@ -68,6 +70,7 @@ func toJSONResult(r classify.Result) jsonResult {
 		QueryTimeMS: queryTimeMS(r),
 		SOAOwner:    r.Probe.SOAOwner,
 		SOAMName:    r.Probe.SOAMName,
+		RD0:         r.RD0,
 		Source:      r.Source,
 	}
 	if r.Probe.EDECode >= 0 {

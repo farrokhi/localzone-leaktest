@@ -120,8 +120,12 @@ func writeVerbose(e *ew, r classify.Result, opts Options) {
 	if owner == "" {
 		owner = "none"
 	}
-	detail := fmt.Sprintf("    rcode=%s  aa=%v  soa_owner=%s  soa_mname=%s  ede=%s  qtime=%dms",
-		rcode, r.Probe.AA, owner, soa, ede, r.Probe.RTT.Milliseconds())
+	rd0 := r.RD0
+	if rd0 == "" {
+		rd0 = "-"
+	}
+	detail := fmt.Sprintf("    rcode=%s  aa=%v  soa_owner=%s  soa_mname=%s  ede=%s  rd0=%s  qtime=%dms",
+		rcode, r.Probe.AA, owner, soa, ede, rd0, r.Probe.RTT.Milliseconds())
 	if opts.Color {
 		detail = ansiDim + detail + ansiReset
 	}

@@ -2,9 +2,9 @@
 // names that the tool probes, expressed as structured data so categories can be
 // filtered and the ranges expanded programmatically rather than hardcoded.
 //
-// The dataset and its RFC references come from the build spec (section 3). The
-// package deliberately carries no DNS library dependency so the data and its
-// range expansion can be tested in isolation.
+// Each entry carries its RFC reference. The package deliberately has no DNS
+// library dependency so the data and its range expansion can be tested in
+// isolation.
 package dataset
 
 import "fmt"
@@ -36,7 +36,7 @@ type Zone struct {
 	// AS112 is true when the zone's reverse queries are actually delegated to
 	// the AS112 blackhole nameservers, as opposed to being answered empty by
 	// the parent operator or a RIR. This changes what a leaked answer looks
-	// like on the wire (see the build spec, section 2).
+	// like on the wire (see RFC 7534 and RFC 7535).
 	AS112 bool
 	// QType is the query type to use, QTypePTR for reverse zones and QTypeA for
 	// forward names.

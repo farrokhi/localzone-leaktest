@@ -60,9 +60,11 @@ func Run(opts Options) (*Report, error) {
 		return nil, err
 	}
 
+	// The baseline is shown as context in the report header; it does not take
+	// part in classification.
 	baseline, baselineOK := measureBaseline(q)
 
-	results := probeAll(q, zones, baseline, opts.Concurrency)
+	results := probeAll(q, zones, opts.Concurrency)
 
 	summary := Summary{
 		Resolver:   q.Server(),
@@ -80,8 +82,8 @@ func Run(opts Options) (*Report, error) {
 }
 
 // measureBaseline times a query that must recurse (a random label under .com).
-// A failure or an anomalous control response yields a zero baseline, which the
-// classifier treats as "unknown" and handles with absolute latency cutoffs.
+// The result is display-only context for the report header; a failure or an
+// anomalous control response marks it unavailable.
 func measureBaseline(q *query.Querier) (time.Duration, bool) {
 	name, err := query.BaselineName()
 	if err != nil {
@@ -105,8 +107,32 @@ func validBaseline(r query.ProbeResult) bool {
 	return r.RCode == dns.RcodeNameError && !r.HasAnswer
 }
 
+// rd0Probe sends the non-recursive follow-up probe under a fresh random label
+// when the primary answer warrants it, returning nil otherwise. The fresh label
+// guarantees the RD=0 answer cannot be an exact-name cache hit.
+func rd0Probe(q *query.Querier, z dataset.Zone, r query.ProbeResult) *query.ProbeResult {
+	if !needsRD0(r) {
+		return nil
+	}
+	name, err := query.ProbeName(z.Name)
+	if err != nil {
+		return nil
+	}
+	p := q.QueryNonRecursive(name, query.DNSType(z.QType))
+	return &p
+}
+
+// needsRD0 reports whether the primary probe produced a bare negative answer
+// with no SOA, the one shape where a non-recursive follow-up adds evidence.
+func needsRD0(r query.ProbeResult) bool {
+	if r.Err != nil || r.HasAnswer || r.HasSOA {
+		return false
+	}
+	return r.RCode == dns.RcodeSuccess || r.RCode == dns.RcodeNameError
+}
+
 // probeAll probes every zone concurrently and returns results in dataset order.
-func probeAll(q *query.Querier, zones []dataset.Zone, baseline time.Duration, concurrency int) []classify.Result {
+func probeAll(q *query.Querier, zones []dataset.Zone, concurrency int) []classify.Result {
 	if concurrency < 1 {
 		concurrency = 10
 	}
@@ -128,7 +154,7 @@ func probeAll(q *query.Querier, zones []dataset.Zone, baseline time.Duration, co
 				continue
 			}
 			r := q.Query(name, query.DNSType(z.QType))
-			results[i] = classify.Classify(r, z, baseline)
+			results[i] = classify.Classify(r, rd0Probe(q, z, r), z)
 		}
 	}
 

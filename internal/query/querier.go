@@ -28,9 +28,9 @@ type ProbeResult struct {
 	Answers   []string
 	HasAnswer bool
 
-	// AA is the Authoritative Answer bit. AA=1 on an empty answer means something
-	// is answering authoritatively for the zone (an AS112 node or a strict
-	// RFC 6303 empty zone), which sharpens the SOA reading.
+	// AA is the Authoritative Answer bit, shown in verbose and JSON output. An
+	// AS112 node and a local RFC 6303 empty zone both set it, so it cannot
+	// distinguish the two and takes no part in classification.
 	AA bool
 
 	// SOA source from the authority section of a negative answer.
@@ -104,13 +104,24 @@ func New(cfg Config) (*Querier, error) {
 // Server returns the resolved host:port of the resolver under test.
 func (q *Querier) Server() string { return q.server }
 
-// Query sends one probe and returns the parsed result. A transport error or
-// timeout is captured in ProbeResult.Err rather than returned, so callers can
-// classify it as an ERROR outcome uniformly.
+// Query sends one recursive probe and returns the parsed result. A transport
+// error or timeout is captured in ProbeResult.Err rather than returned, so
+// callers can classify it as an ERROR outcome uniformly.
 func (q *Querier) Query(qname string, qtype uint16) ProbeResult {
+	return q.query(qname, qtype, true)
+}
+
+// QueryNonRecursive sends one probe with the RD bit clear. A resolver holding
+// the zone as local data answers it; a purely recursing resolver can only
+// answer from cache and typically refuses.
+func (q *Querier) QueryNonRecursive(qname string, qtype uint16) ProbeResult {
+	return q.query(qname, qtype, false)
+}
+
+func (q *Querier) query(qname string, qtype uint16, rd bool) ProbeResult {
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(qname), qtype)
-	m.RecursionDesired = true
+	m.RecursionDesired = rd
 	// Advertise EDNS0 so a resolver may attach an Extended DNS Error and so we
 	// can receive responses larger than 512 bytes.
 	m.SetEdns0(4096, false)
