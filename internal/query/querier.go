@@ -23,14 +23,13 @@ type ProbeResult struct {
 	RCode     int
 	RCodeText string
 
-	// Answers holds a short textual form of each answer record, for display and
-	// hijack detection, for example "A 10.1.2.3" or "PTR host.example.".
+	// Answers holds short textual answer records ("A 10.1.2.3"), for display
+	// and hijack detection.
 	Answers   []string
 	HasAnswer bool
 
-	// AA is the Authoritative Answer bit, shown in verbose and JSON output. An
-	// AS112 node and a local RFC 6303 empty zone both set it, so it cannot
-	// distinguish the two and takes no part in classification.
+	// AA cannot distinguish an AS112 node from a local empty zone, so it is
+	// shown in output but takes no part in classification.
 	AA bool
 
 	// SOA source from the authority section of a negative answer.
@@ -111,9 +110,8 @@ func (q *Querier) Query(qname string, qtype uint16) ProbeResult {
 	return q.query(qname, qtype, true)
 }
 
-// QueryNonRecursive sends one probe with the RD bit clear. A resolver holding
-// the zone as local data answers it; a purely recursing resolver can only
-// answer from cache and typically refuses.
+// QueryNonRecursive sends one probe with the RD bit clear: a resolver holding
+// the zone as local data answers it, a purely recursing one typically refuses.
 func (q *Querier) QueryNonRecursive(qname string, qtype uint16) ProbeResult {
 	return q.query(qname, qtype, false)
 }
@@ -206,7 +204,6 @@ func ResultFromMsg(m *dns.Msg, qname string, qtype uint16, rtt time.Duration, er
 	return r
 }
 
-// edeText renders an Extended DNS Error as a "purpose: extra" string.
 func edeText(ede *dns.EDNS0_EDE) string {
 	name := dns.ExtendedErrorCodeToString[ede.InfoCode]
 	if name == "" {
@@ -219,8 +216,7 @@ func edeText(ede *dns.EDNS0_EDE) string {
 }
 
 // resolveServer returns a host:port address for the resolver, falling back to
-// the system default resolver when server is empty. A zero port means the
-// caller did not pass -p, so the default (or the resolv.conf port) applies.
+// the system default resolver when server is empty.
 func resolveServer(server string, port int) (string, error) {
 	if server == "" {
 		cfg, err := dns.ClientConfigFromFile("/etc/resolv.conf")
@@ -239,7 +235,6 @@ func resolveServer(server string, port int) (string, error) {
 		}
 		return net.JoinHostPort(cfg.Servers[0], p), nil
 	}
-	// If the caller already supplied a port in the server string, honor it.
 	if host, p, err := net.SplitHostPort(server); err == nil {
 		return net.JoinHostPort(host, p), nil
 	}
@@ -249,7 +244,7 @@ func resolveServer(server string, port int) (string, error) {
 	return net.JoinHostPort(server, strconv.Itoa(port)), nil
 }
 
-// tcpNet maps a udp network to its tcp counterpart, preserving address family.
+// tcpNet maps a udp network to its tcp counterpart with the same address family.
 func tcpNet(udp string) string {
 	switch udp {
 	case "udp4":

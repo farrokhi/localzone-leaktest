@@ -33,17 +33,15 @@ type Zone struct {
 	Category string
 	// RFC is a short human reference such as "RFC 1918 (BCP 5)".
 	RFC string
-	// AS112 is true when the zone's reverse queries are actually delegated to
-	// the AS112 blackhole nameservers, as opposed to being answered empty by
-	// the parent operator or a RIR. This changes what a leaked answer looks
-	// like on the wire (see RFC 7534 and RFC 7535).
+	// AS112 is true when the zone is delegated to the AS112 blackhole servers
+	// rather than answered empty by the parent or a RIR, which changes what a
+	// leaked answer looks like on the wire (RFC 7534, RFC 7535).
 	AS112 bool
 	// QType is the query type to use, QTypePTR for reverse zones and QTypeA for
 	// forward names.
 	QType string
-	// Informational marks names whose "leak-looking" answer is by design and
-	// should not count as a failure. resolver.arpa is answered with SVCB by
-	// DDR aware resolvers (RFC 9462), so it is informational, not a leak.
+	// Informational marks names whose leak-looking answer is by design, like
+	// resolver.arpa answered with SVCB by DDR resolvers (RFC 9462).
 	Informational bool
 }
 
@@ -141,11 +139,8 @@ func Filter(zones []Zone, keys []string) []Zone {
 	return out
 }
 
-// ip6Nibbles builds the reverse nibble prefix (each nibble followed by a dot)
-// for an address whose only non zero low order nibbles are given in low, in the
-// order least significant first. The result is padded to 32 nibbles so that the
-// caller can append "ip6.arpa". An empty low yields the all zeros prefix used
-// for the unspecified address.
+// ip6Nibbles builds a reverse nibble prefix from the low order nibbles (least
+// significant first), zero padded to 32 so the caller can append "ip6.arpa".
 func ip6Nibbles(low string) string {
 	out := make([]byte, 0, 64)
 	for i := 0; i < len(low); i++ {

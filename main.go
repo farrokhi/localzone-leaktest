@@ -10,19 +10,20 @@ import (
 	"github.com/farrokhi/localzone-leaktest/internal/cli"
 )
 
-// version is the fallback build version. Release builds may override it with
-// -ldflags "-X main.version=...", and an install via `go install ...@vX.Y.Z`
-// reports that tag automatically through the module build info.
-var version = "1.0.0"
+// version is stamped by release builds via -ldflags "-X main.version=vX.Y.Z".
+var version = "dev"
 
 func main() {
 	os.Exit(cli.Execute(resolveVersion()))
 }
 
-// resolveVersion prefers the module version stamped into the binary by the Go
-// toolchain (present when installed from a tagged release), falling back to the
-// compiled-in default for source builds.
+// resolveVersion trusts an explicit release stamp first, since the toolchain's
+// VCS-derived build info degrades to a pseudo-version on any dirty tree. The
+// build info still covers `go install ...@vX.Y.Z` builds, which have no stamp.
 func resolveVersion() string {
+	if version != "dev" {
+		return version
+	}
 	if info, ok := debug.ReadBuildInfo(); ok {
 		if v := info.Main.Version; v != "" && v != "(devel)" {
 			return v

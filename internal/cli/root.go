@@ -172,7 +172,6 @@ func exitCode(s runner.Summary, strict bool) int {
 	return 0
 }
 
-// parseCategories splits and validates the --category list.
 func parseCategories(list string) ([]string, error) {
 	var out []string
 	for _, part := range strings.Split(list, ",") {
@@ -191,9 +190,8 @@ func parseCategories(list string) ([]string, error) {
 	return out, nil
 }
 
-// writeList prints the selected test names with their category and RFC.
-// Writes to the tabwriter only buffer; any real write error surfaces from Flush,
-// which is the single error worth returning.
+// writeList prints the selected test names. The tabwriter only buffers, so
+// Flush carries the one real write error.
 func writeList(w io.Writer, cats []string) error {
 	zones := dataset.Filter(dataset.Build(), cats)
 	tw := tabwriter.NewWriter(w, 0, 2, 2, ' ', 0)
@@ -208,8 +206,6 @@ func writeList(w io.Writer, cats []string) error {
 	return tw.Flush()
 }
 
-// isTTY reports whether f is a character device, so color is only used on a
-// real terminal.
 func isTTY(f *os.File) bool {
 	fi, err := f.Stat()
 	if err != nil {

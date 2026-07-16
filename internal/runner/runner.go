@@ -60,8 +60,7 @@ func Run(opts Options) (*Report, error) {
 		return nil, err
 	}
 
-	// The baseline is shown as context in the report header; it does not take
-	// part in classification.
+	// Display-only context for the report header; never part of classification.
 	baseline, baselineOK := measureBaseline(q)
 
 	results := probeAll(q, zones, opts.Concurrency)
@@ -82,8 +81,6 @@ func Run(opts Options) (*Report, error) {
 }
 
 // measureBaseline times a query that must recurse (a random label under .com).
-// The result is display-only context for the report header; a failure or an
-// anomalous control response marks it unavailable.
 func measureBaseline(q *query.Querier) (time.Duration, bool) {
 	name, err := query.BaselineName()
 	if err != nil {
@@ -96,10 +93,8 @@ func measureBaseline(q *query.Querier) (time.Duration, bool) {
 	return r.RTT, true
 }
 
-// validBaseline reports whether the control query produced the recursive
-// negative answer we expect from a random label under a real TLD. Anything else
-// (a transport error, SERVFAIL/REFUSED, or a rewritten answer from a hijacking
-// resolver or captive portal) must not be trusted as a latency reference.
+// validBaseline rejects control responses that cannot be trusted as a latency
+// reference: transport errors, anomalous RCODEs, or rewritten answers.
 func validBaseline(r query.ProbeResult) bool {
 	if r.Err != nil {
 		return false
@@ -107,9 +102,8 @@ func validBaseline(r query.ProbeResult) bool {
 	return r.RCode == dns.RcodeNameError && !r.HasAnswer
 }
 
-// rd0Probe sends the non-recursive follow-up probe under a fresh random label
-// when the primary answer warrants it, returning nil otherwise. The fresh label
-// guarantees the RD=0 answer cannot be an exact-name cache hit.
+// rd0Probe sends the RD=0 follow-up under a fresh random label, so the answer
+// cannot be an exact-name cache hit. Returns nil when not warranted.
 func rd0Probe(q *query.Querier, z dataset.Zone, r query.ProbeResult) *query.ProbeResult {
 	if !needsRD0(r) {
 		return nil
@@ -122,8 +116,7 @@ func rd0Probe(q *query.Querier, z dataset.Zone, r query.ProbeResult) *query.Prob
 	return &p
 }
 
-// needsRD0 reports whether the primary probe produced a bare negative answer
-// with no SOA, the one shape where a non-recursive follow-up adds evidence.
+// needsRD0: only a bare negative answer with no SOA warrants the follow-up.
 func needsRD0(r query.ProbeResult) bool {
 	if r.Err != nil || r.HasAnswer || r.HasSOA {
 		return false

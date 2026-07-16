@@ -26,7 +26,6 @@ func queryTimeMS(r classify.Result) int64 {
 	return r.Probe.RTT.Milliseconds()
 }
 
-// baselineMS renders the recursion baseline for display.
 func baselineMS(s runner.Summary) string {
 	if !s.BaselineOK {
 		return "unavailable"

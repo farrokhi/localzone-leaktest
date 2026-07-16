@@ -22,7 +22,7 @@ This is not a VPN DNS leak test. There are many of those on the internet. This t
 go install github.com/farrokhi/localzone-leaktest@latest
 ```
 
-Or build from a checkout with `go build -o localzone-leaktest .`. Requires Go 1.25 or newer. The binary has no runtime dependencies and runs on Linux, macOS, and FreeBSD.
+Prebuilt binaries for Linux (amd64, arm64), macOS (arm64), Windows (amd64), and FreeBSD (amd64) are on the [releases page](https://github.com/farrokhi/localzone-leaktest/releases). Or build from a checkout with `go build -o localzone-leaktest .`; requires Go 1.25 or newer. The binary has no runtime dependencies.
 
 ## Usage
 

@@ -27,9 +27,8 @@ const maxNameWidth = 44
 // markerWidth is the STATUS column width, sized to the widest marker "[INCONCL]".
 const markerWidth = 9
 
-// ew wraps an io.Writer and remembers the first write error, so the report can
-// be emitted as a straight sequence of writes and the error surfaced once at the
-// end instead of being checked after every call.
+// ew remembers the first write error so it can be surfaced once at the end
+// instead of being checked after every write.
 type ew struct {
 	w   io.Writer
 	err error
@@ -49,8 +48,7 @@ func (e *ew) println(a ...any) {
 	_, e.err = fmt.Fprintln(e.w, a...)
 }
 
-// Human writes the human readable report to w and returns the first write error,
-// if any (for example a broken pipe when the output is piped into head).
+// Human writes the human readable report to w.
 func Human(w io.Writer, rep *runner.Report, opts Options) error {
 	e := &ew{w: w}
 	s := rep.Summary
@@ -164,7 +162,6 @@ func writeSummary(e *ew, s runner.Summary, opts Options) {
 	e.println(colorize(line, verdict, opts.Color))
 }
 
-// noun returns "name" or "names" to agree with a count.
 func noun(n int) string {
 	if n == 1 {
 		return "name"
