@@ -27,19 +27,44 @@ const maxNameWidth = 44
 // markerWidth is the STATUS column width, sized to the widest marker "[INCONCL]".
 const markerWidth = 9
 
-// Human writes the human readable report to w.
-func Human(w io.Writer, rep *runner.Report, opts Options) {
+// ew wraps an io.Writer and remembers the first write error, so the report can
+// be emitted as a straight sequence of writes and the error surfaced once at the
+// end instead of being checked after every call.
+type ew struct {
+	w   io.Writer
+	err error
+}
+
+func (e *ew) printf(format string, a ...any) {
+	if e.err != nil {
+		return
+	}
+	_, e.err = fmt.Fprintf(e.w, format, a...)
+}
+
+func (e *ew) println(a ...any) {
+	if e.err != nil {
+		return
+	}
+	_, e.err = fmt.Fprintln(e.w, a...)
+}
+
+// Human writes the human readable report to w and returns the first write error,
+// if any (for example a broken pipe when the output is piped into head).
+func Human(w io.Writer, rep *runner.Report, opts Options) error {
+	e := &ew{w: w}
 	s := rep.Summary
 
 	if !opts.Quiet {
-		fmt.Fprintf(w, "Resolver: %s    Recursion baseline: %s\n\n", s.Resolver, baselineMS(s))
-		writeTable(w, rep.Results, opts)
-		fmt.Fprintln(w)
+		e.printf("Resolver: %s    Recursion baseline: %s\n\n", s.Resolver, baselineMS(s))
+		writeTable(e, rep.Results, opts)
+		e.println()
 	}
-	writeSummary(w, s, opts)
+	writeSummary(e, s, opts)
+	return e.err
 }
 
-func writeTable(w io.Writer, results []classify.Result, opts Options) {
+func writeTable(e *ew, results []classify.Result, opts Options) {
 	nameW := 4 // len("NAME")
 	catW := 8  // len("CATEGORY")
 	for _, r := range results {
@@ -54,7 +79,7 @@ func writeTable(w io.Writer, results []classify.Result, opts Options) {
 		nameW = maxNameWidth
 	}
 
-	fmt.Fprintf(w, "%-*s  %-*s  %-*s  %8s  %s\n",
+	e.printf("%-*s  %-*s  %-*s  %8s  %s\n",
 		nameW, "NAME", catW, "CATEGORY", markerWidth, "STATUS", "TIME", "SOURCE")
 
 	for _, r := range results {
@@ -62,7 +87,7 @@ func writeTable(w io.Writer, results []classify.Result, opts Options) {
 		// Pad the marker on its plain text width so color codes do not distort
 		// column alignment.
 		markerPad := strings.Repeat(" ", markerWidth-len(markerText(r.Verdict)))
-		fmt.Fprintf(w, "%-*s  %-*s  %s%s  %8s  %s\n",
+		e.printf("%-*s  %-*s  %s%s  %8s  %s\n",
 			nameW, displayName(r.Zone.Name),
 			catW, r.Zone.Category,
 			marker, markerPad,
@@ -70,12 +95,12 @@ func writeTable(w io.Writer, results []classify.Result, opts Options) {
 			r.Source)
 
 		if opts.Verbose {
-			writeVerbose(w, r, opts)
+			writeVerbose(e, r, opts)
 		}
 	}
 }
 
-func writeVerbose(w io.Writer, r classify.Result, opts Options) {
+func writeVerbose(e *ew, r classify.Result, opts Options) {
 	rcode := r.Probe.RCodeText
 	if rcode == "" {
 		rcode = "-"
@@ -100,17 +125,17 @@ func writeVerbose(w io.Writer, r classify.Result, opts Options) {
 	if opts.Color {
 		detail = ansiDim + detail + ansiReset
 	}
-	fmt.Fprintln(w, detail)
+	e.println(detail)
 }
 
-func writeSummary(w io.Writer, s runner.Summary, opts Options) {
+func writeSummary(e *ew, s runner.Summary, opts Options) {
 	local := s.Counts[classify.VerdictLocal]
 	leak := s.Counts[classify.VerdictLeak]
 	hijack := s.Counts[classify.VerdictHijack]
 	inconcl := s.Counts[classify.VerdictInconclusive]
 	errs := s.Counts[classify.VerdictError]
 
-	fmt.Fprintf(w, "Summary: %d local, %d leaked, %d hijacked, %d inconclusive, %d errors (of %d tested)\n",
+	e.printf("Summary: %d local, %d leaked, %d hijacked, %d inconclusive, %d errors (of %d tested)\n",
 		local, leak, hijack, inconcl, errs, s.Total)
 
 	var line string
@@ -132,7 +157,7 @@ func writeSummary(w io.Writer, s runner.Summary, opts Options) {
 		line = fmt.Sprintf("no leaks, but %d %s could not be tested cleanly.", errs, noun(errs))
 		verdict = classify.VerdictError
 	}
-	fmt.Fprintln(w, colorize(line, verdict, opts.Color))
+	e.println(colorize(line, verdict, opts.Color))
 }
 
 // noun returns "name" or "names" to agree with a count.

@@ -3,6 +3,7 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -106,8 +107,7 @@ func run(cmd *cobra.Command, args []string, f *flags, exit *int) error {
 	}
 
 	if f.list {
-		writeList(cmd.OutOrStdout(), cats)
-		return nil
+		return writeList(cmd.OutOrStdout(), cats)
 	}
 
 	net := "udp"
@@ -144,7 +144,11 @@ func run(cmd *cobra.Command, args []string, f *flags, exit *int) error {
 			Verbose: f.verbose,
 			Quiet:   f.quiet,
 		}
-		report.Human(os.Stdout, rep, opts)
+		if err := report.Human(os.Stdout, rep, opts); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			*exit = 2
+			return nil
+		}
 	}
 
 	*exit = exitCode(rep.Summary, f.strict)
@@ -188,18 +192,20 @@ func parseCategories(list string) ([]string, error) {
 }
 
 // writeList prints the selected test names with their category and RFC.
-func writeList(w interface{ Write([]byte) (int, error) }, cats []string) {
+// Writes to the tabwriter only buffer; any real write error surfaces from Flush,
+// which is the single error worth returning.
+func writeList(w io.Writer, cats []string) error {
 	zones := dataset.Filter(dataset.Build(), cats)
 	tw := tabwriter.NewWriter(w, 0, 2, 2, ' ', 0)
-	fmt.Fprintln(tw, "NAME\tCATEGORY\tRFC\tAS112")
+	_, _ = fmt.Fprintln(tw, "NAME\tCATEGORY\tRFC\tAS112")
 	for _, z := range zones {
 		as112 := "no"
 		if z.AS112 {
 			as112 = "yes"
 		}
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", z.Name, z.Category, z.RFC, as112)
+		_, _ = fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", z.Name, z.Category, z.RFC, as112)
 	}
-	tw.Flush()
+	return tw.Flush()
 }
 
 // isTTY reports whether f is a character device, so color is only used on a
