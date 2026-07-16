@@ -1,5 +1,17 @@
 # localzone-leaktest
 
+## TL;DR
+
+Your resolver is supposed to answer queries for private names (`10.in-addr.arpa`, `home.arpa`, `corp`, ...) itself. This tool sends it a batch of such queries and reports which ones leak to the public internet.
+
+```
+go install github.com/farrokhi/localzone-leaktest@latest
+localzone-leaktest              # test the system resolver
+localzone-leaktest @192.168.1.1 # or your router, or any resolver
+```
+
+Every row `[LOCAL]` and exit code 0 means your resolver behaves; `[LEAK]` rows name where the query ended up.
+
 `localzone-leaktest` checks whether a DNS resolver answers the IANA locally served zones and special use names itself (RFC 6303 and related), or leaks those queries to the public internet. Leaking discloses internal names and network structure to third parties, loads the AS112 project and the root servers, and is slower than a local answer, which a well behaved resolver returns from a built in empty zone in about a millisecond (or whatever your distance is to the resolver, which is expected to be much shorter than to a root server, unless you live in a datacenter). Point it at your system resolver, your router, a public resolver like `9.9.9.9`, or any server you name.
 
 This is not a VPN DNS leak test. There are many of those on the internet. This tool does not look at VPN tunnels. **It checks whether a resolver keeps standardized private and special use names local instead of forwarding them to the root and the regional registries.**
