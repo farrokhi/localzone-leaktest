@@ -114,7 +114,7 @@ The tool tests 109 names. The reverse zone ranges are expanded programmatically 
 
 Tested on Linux, macOS, and FreeBSD. With no resolver specified, it reads `/etc/resolv.conf`. But you may want to compare different resolvers, so you should specify your target resolver using `-s`.
 
-There are multiple exit codes:  `0` when every name was handled locally , `1` when any leak or hijack was found, and `2` for a usage or environment error such as an unreachable resolver. 
+There are multiple exit codes: `0` when every name was handled locally, `1` when any leak or hijack was found, and `2` for a usage or environment error such as an unreachable resolver. A resolver that does not respond at all (for example one blocked by a firewall or VPN) fails fast after roughly two query timeouts instead of probing every name.
 
 ## References
 

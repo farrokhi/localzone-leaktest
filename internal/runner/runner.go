@@ -60,8 +60,12 @@ func Run(opts Options) (*Report, error) {
 		return nil, err
 	}
 
-	// Display-only context for the report header; never part of classification.
-	baseline, baselineOK := measureBaseline(q)
+	// Doubles as the reachability preflight; the baseline itself is display-only
+	// context for the report header and never part of classification.
+	baseline, baselineOK, err := measureBaseline(q)
+	if err != nil {
+		return nil, err
+	}
 
 	results := probeAll(q, zones, opts.Concurrency)
 
@@ -81,20 +85,30 @@ func Run(opts Options) (*Report, error) {
 }
 
 // measureBaseline times a query that must recurse (a random label under .com).
-func measureBaseline(q *query.Querier) (time.Duration, bool) {
+// It doubles as the reachability preflight: a transport error is retried once
+// for packet loss, and a second failure aborts the run, so an unreachable
+// resolver fails in two timeouts instead of one per probed name.
+func measureBaseline(q *query.Querier) (time.Duration, bool, error) {
 	name, err := query.BaselineName()
 	if err != nil {
-		return 0, false
+		return 0, false, nil
 	}
 	r := q.Query(name, query.DNSType(dataset.QTypeA))
-	if !validBaseline(r) {
-		return 0, false
+	if r.Err != nil {
+		r = q.Query(name, query.DNSType(dataset.QTypeA))
 	}
-	return r.RTT, true
+	if r.Err != nil {
+		return 0, false, fmt.Errorf("resolver %s is not responding (%v); check connectivity or firewall/VPN rules", q.Server(), r.Err)
+	}
+	if !validBaseline(r) {
+		return 0, false, nil
+	}
+	return r.RTT, true, nil
 }
 
 // validBaseline rejects control responses that cannot be trusted as a latency
-// reference: transport errors, anomalous RCODEs, or rewritten answers.
+// reference: transport errors, anomalous RCODEs, or rewritten answers. Those
+// still allow the run to proceed; only unreachability aborts it.
 func validBaseline(r query.ProbeResult) bool {
 	if r.Err != nil {
 		return false
