@@ -16,7 +16,7 @@ Or build from a checkout with `go build -o localzone-leaktest .`. Requires Go 1.
 
 ```
 localzone-leaktest                     # test the system resolver
-localzone-leaktest @1.1.1.1            # test a specific resolver
+localzone-leaktest @9.9.9.9            # test a specific resolver
 localzone-leaktest -s 192.168.1.1      # test your home router
 localzone-leaktest -c rfc1918 -v       # only the RFC 1918 reverse zones, verbose
 localzone-leaktest --json | jq .       # machine readable output
