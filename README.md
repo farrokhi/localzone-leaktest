@@ -1,5 +1,10 @@
 # localzone-leaktest
 
+[![CI](https://github.com/farrokhi/localzone-leaktest/actions/workflows/ci.yml/badge.svg)](https://github.com/farrokhi/localzone-leaktest/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/farrokhi/localzone-leaktest)](https://github.com/farrokhi/localzone-leaktest/releases)
+[![Go version](https://img.shields.io/github/go-mod/go-version/farrokhi/localzone-leaktest)](go.mod)
+[![License](https://img.shields.io/github/license/farrokhi/localzone-leaktest)](LICENSE)
+
 ## TL;DR
 
 Your resolver is supposed to answer queries for private names (`10.in-addr.arpa`, `home.arpa`, `corp`, ...) itself. This tool sends it a batch of such queries and reports which ones leak to the public internet.
