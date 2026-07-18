@@ -1,3 +1,4 @@
 /localzone-leaktest
 *.out
 /dist/
+.idea/
