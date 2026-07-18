@@ -123,26 +123,26 @@ There are multiple exit codes: `0` when every name was handled locally, `1` when
 
 ## References
 
-- RFC 6303 Locally Served DNS Zones (BCP 163): https://www.rfc-editor.org/rfc/rfc6303
-- RFC 1918 Address Allocation for Private Internets (BCP 5): https://www.rfc-editor.org/rfc/rfc1918
-- RFC 3927 Dynamic Configuration of IPv4 Link-Local Addresses: https://www.rfc-editor.org/rfc/rfc3927
-- RFC 5737 IPv4 Address Blocks Reserved for Documentation: https://www.rfc-editor.org/rfc/rfc5737
-- RFC 6598 IANA-Reserved IPv4 Prefix for Shared Address Space (BCP 153): https://www.rfc-editor.org/rfc/rfc6598
-- RFC 7793 Adding 100.64.0.0/10 to the IPv4 Locally-Served DNS Zones Registry: https://www.rfc-editor.org/rfc/rfc7793
-- RFC 4291 IP Version 6 Addressing Architecture: https://www.rfc-editor.org/rfc/rfc4291
-- RFC 4193 Unique Local IPv6 Unicast Addresses: https://www.rfc-editor.org/rfc/rfc4193
-- RFC 3849 IPv6 Address Prefix Reserved for Documentation: https://www.rfc-editor.org/rfc/rfc3849
-- RFC 9637 Expanding the IPv6 Documentation Space: https://www.rfc-editor.org/rfc/rfc9637
-- RFC 8375 Special-Use Domain 'home.arpa.': https://www.rfc-editor.org/rfc/rfc8375
-- RFC 9665 Service Registration Protocol for DNS-Based Service Discovery: https://www.rfc-editor.org/rfc/rfc9665
-- RFC 9462 Discovery of Designated Resolvers: https://www.rfc-editor.org/rfc/rfc9462
-- RFC 6762 Multicast DNS: https://www.rfc-editor.org/rfc/rfc6762
-- RFC 7686 The ".onion" Special-Use Domain Name: https://www.rfc-editor.org/rfc/rfc7686
-- RFC 7534 AS112 Nameserver Operations: https://www.rfc-editor.org/rfc/rfc7534
-- RFC 7535 AS112 Redirection Using DNAME: https://www.rfc-editor.org/rfc/rfc7535
-- RFC 8914 Extended DNS Errors: https://www.rfc-editor.org/rfc/rfc8914
-- RFC 2308 Negative Caching of DNS Queries (DNS NCACHE): https://www.rfc-editor.org/rfc/rfc2308
-- RFC 9156 DNS Query Name Minimisation to Improve Privacy: https://www.rfc-editor.org/rfc/rfc9156
+- [RFC 6303](https://datatracker.ietf.org/doc/html/rfc6303) - Locally Served DNS Zones (BCP 163)
+- [RFC 1918](https://datatracker.ietf.org/doc/html/rfc1918) - Address Allocation for Private Internets (BCP 5)
+- [RFC 3927](https://datatracker.ietf.org/doc/html/rfc3927) - Dynamic Configuration of IPv4 Link-Local Addresses
+- [RFC 5737](https://datatracker.ietf.org/doc/html/rfc5737) - IPv4 Address Blocks Reserved for Documentation
+- [RFC 6598](https://datatracker.ietf.org/doc/html/rfc6598) - IANA-Reserved IPv4 Prefix for Shared Address Space (BCP 153)
+- [RFC 7793](https://datatracker.ietf.org/doc/html/rfc7793) - Adding 100.64.0.0/10 to the IPv4 Locally-Served DNS Zones Registry
+- [RFC 4291](https://datatracker.ietf.org/doc/html/rfc4291) - IP Version 6 Addressing Architecture
+- [RFC 4193](https://datatracker.ietf.org/doc/html/rfc4193) - Unique Local IPv6 Unicast Addresses
+- [RFC 3849](https://datatracker.ietf.org/doc/html/rfc3849) - IPv6 Address Prefix Reserved for Documentation
+- [RFC 9637](https://datatracker.ietf.org/doc/html/rfc9637) - Expanding the IPv6 Documentation Space
+- [RFC 8375](https://datatracker.ietf.org/doc/html/rfc8375) - Special-Use Domain 'home.arpa.'
+- [RFC 9665](https://datatracker.ietf.org/doc/html/rfc9665) - Service Registration Protocol for DNS-Based Service Discovery
+- [RFC 9462](https://datatracker.ietf.org/doc/html/rfc9462) - Discovery of Designated Resolvers
+- [RFC 6762](https://datatracker.ietf.org/doc/html/rfc6762) - Multicast DNS
+- [RFC 7686](https://datatracker.ietf.org/doc/html/rfc7686) - The ".onion" Special-Use Domain Name
+- [RFC 7534](https://datatracker.ietf.org/doc/html/rfc7534) - AS112 Nameserver Operations
+- [RFC 7535](https://datatracker.ietf.org/doc/html/rfc7535) - AS112 Redirection Using DNAME
+- [RFC 8914](https://datatracker.ietf.org/doc/html/rfc8914) - Extended DNS Errors
+- [RFC 2308](https://datatracker.ietf.org/doc/html/rfc2308) - Negative Caching of DNS Queries (DNS NCACHE)
+- [RFC 9156](https://datatracker.ietf.org/doc/html/rfc9156) - DNS Query Name Minimisation to Improve Privacy
 
 ## License
 
